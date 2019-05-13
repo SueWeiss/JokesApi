@@ -5,39 +5,55 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using _5_08HW.Models;
+using Microsoft.Extensions.Configuration;
+using _5_08HW.Data;
+using Newtonsoft.Json;
+
 
 namespace _5_08HW.Controllers
 {
     public class HomeController : Controller
     {
+        private string _connectionString;
+        public HomeController(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("ConStr");
+        }
+
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult About()
+        public IActionResult Jokes()
         {
-            ViewData["Message"] = "Your application description page.";
+            Manager mgr = new  Manager(_connectionString);
+            var jvm = new JokesViewModel();
+            jvm.Joke= mgr.GetAPIJoke();
 
-            return View();
+            if (User.Identity.IsAuthenticated)
+            {
+                jvm.LoggedIn = true;
+                User logged= mgr.GetByEmail( User.Identity.Name);
+                if (logged.JokesLiked.Any(j => j.JokeId == jvm.Joke.Id))
+                {
+                    jvm.CouldLike = false;                   
+                }                
+            }
+            return View(jvm);
         }
-
-        public IActionResult Contact()
+        [HttpPost]
+        public IActionResult AddLike(int Id)
         {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            Manager mgr = new Manager(_connectionString);
+            mgr.AddLike(mgr.GetJokeWithId(Id), mgr.GetByEmail(User.Identity.Name));
+            return Json("Thank You");
         }
-
-        public IActionResult Privacy()
+        public IActionResult AllJokes()
         {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            Manager mgr = new Manager(_connectionString);
+            IEnumerable<Jokes> All=mgr.GetAllJokes();
+            return View(All);
         }
     }
 }
