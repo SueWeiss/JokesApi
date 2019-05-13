@@ -1,0 +1,20 @@
+﻿@using _5_08HW.Data
+@using _5_08HW.Models
+@model JokesViewModel
+<!--foreach (Jokes j in Model)
+{-->
+
+<div class="well col-md-9 jokeInfo" style="margin-top:40px;">
+    <p>Joke: @Model.Joke.OriginId</p>
+    <p>@Model.Joke.Setup</p>
+    <p>@Model.Joke.Punchline</p>
+    @if (Model.LoggedIn)
+    {
+        <button class="btn btn-primary likeBtn" data-id="@Model.Joke.Id" id="@Model.Joke.Id-Like">Like</button>
+        <button class="btn btn-danger likeBtn"data-id="@Model.Joke.Id"  id="@Model.Joke.Id-DisLike">DisLike</button>
+    }
+</div>
+
+@section scripts{ 
+<script src="~/JavaScript.js"></script>
+    }
